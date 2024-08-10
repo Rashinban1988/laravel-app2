@@ -1,0 +1,47 @@
+# Compose fileのバージョン指定
+version: '3'
+# どんなコンテナを立ち上げるか
+services:
+ # laravelを動かすコンテナ
+ laravel:
+   # どのポートを開いて繋ぐか。下記はコンテナの80番ポートを開いて、ホストの8000番につなぐ
+   ports:
+     - "8800:80"
+   # 先ほど作ったDockerfileを使って、コンテナをビルドするという指定
+   build: ./docker/app
+   # コンテナの名前を指定
+   container_name: laravel_app
+   # コンテナとホスト側のディレクトリを同期する場所の指定。laravelのソースが入る予定の場所
+   volumes:
+     - ./src:/var/www/html
+ # MySQLを動かすコンテナ
+ db:
+   # MariaDBイメージを使用
+   image: mariadb:10.5
+   # platform行を削除
+   container_name: laravel_db
+   environment:
+     MYSQL_ROOT_PASSWORD: root
+     MYSQL_DATABASE: laravel_db
+     MYSQL_USER: laravel_user
+     MYSQL_PASSWORD: laravel_pass
+     TZ: 'Asia/Tokyo'
+   # 起動時のコマンド
+   command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+   # ディレクトリ同期。設定ファイルとMySQLのデータが保存される場所を同期している。コンテナは基本的に起動時に変更されてもコンテナ自体が止まるとデータが消えてしまうため、保存しておきたいものはホストマシンと同期しておく必要がある。
+   volumes:
+     - ./docker/db/data:/var/lib/mysql
+     - ./docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
+   ports:
+     - 8801:3306
+
+ phpmyadmin:
+   image: phpmyadmin/phpmyadmin
+   container_name: phpmyadmin
+   ports:
+     - 8802:80
+   environment:
+    PMA_HOST: db
+    PMA_PORT: 3306
+    PMA_USER: root
+    PMA_PASSWORD: root
