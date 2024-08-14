@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('work_id');
             $table->foreign('work_id')->references('id')->on('works');
-            $table->string('task_name');
+            $table->string('name');
             $table->string('description');
             $table->boolean('is_draft')->default(true);
 
