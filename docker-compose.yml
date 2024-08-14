@@ -18,8 +18,6 @@ services:
  db:
    # MariaDBイメージを使用
    image: mariadb:10.5
-   # platform行を削除
-   container_name: laravel_db
    environment:
      MYSQL_ROOT_PASSWORD: root
      MYSQL_DATABASE: laravel_db
