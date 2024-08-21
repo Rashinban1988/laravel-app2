@@ -7,11 +7,18 @@ use App\Http\Requests\API\RegisterOrganizationRequest;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
+    /**
+     * 組織登録
+     * @param RegisterOrganizationRequest $request
+     * @return JsonResponse
+     */
     public function register(RegisterOrganizationRequest $request)
     {
         // メールアドレスの重複チェック
@@ -57,5 +64,38 @@ class AuthController extends Controller
             DB::rollBack();
             return response()->json(['error' => $th->getMessage()], 500);
         }
+    }
+
+    /**
+     * ログイン
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+        Log::info($credentials);
+
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            $token = $user->createToken('auth_token');
+
+            return response()->json([
+                'access_token' => $token->plainTextToken,
+                'token_type' => 'Bearer',
+            ]);
+        }
+
+        return response()->json(['message' => 'ログイン情報が正しくありません'], 401);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'ログアウトしました']);
     }
 }
