@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\OrganizationController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -33,7 +34,7 @@ Route::prefix('email')->group(function () {
 
         $user->markEmailAsVerified();
 
-        return response()->json(['message' => 'メールアドレスが認証されました'], 200);
+        return Redirect::to(config('app.front_url') . '/auth/register-success');
     })->middleware('signed')->name('verification.verify');
 
     Route::post('/resend', function (Request $request) {
